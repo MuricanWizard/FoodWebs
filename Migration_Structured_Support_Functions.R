@@ -283,9 +283,13 @@ Structured_Ecosystem <- R6Class("Structured_Ecosystem", lock_objects = FALSE,loc
     for(i in 1:50){
       tempSpecies <- Structured_Species$new()
       tempSpecies$set_ID(i)
+      repr_stage <- tempSpecies$reproductive_stage
       for(j in 1:10){
         tempStage <- Stage$new()
         tempStage$set_ID(j)
+        if(j >= repr_stage){
+          tempStage$activate_reproduction()
+        }
         tempSpecies$insert_stage(tempStage)
       }
       self$add_species(tempSpecies)
@@ -333,65 +337,150 @@ Structured_Ecosystem <- R6Class("Structured_Ecosystem", lock_objects = FALSE,loc
     }
     return(ret)
   },
-  
-  simulate_secondary_extinctions = function(){
-    stop = 0
-#    while(stop == 0){
-    if(self$get_population() < 50){
-      stage_extinctions = list()
-      process_counter = 0
-      for(i in 1:50){
-        for(j in 1:10){
-          if(self$species_list[[i]]$stage_list[[j]]$is_active()){
-            initial_dependency_count = 0
-            dependency_list = list()
-            actual_dependency_count = 0
-            for(k in 1:50){
-              if(length(self$species_list[[i]]$stage_list[[j]]$dependencies[[k]]) >= 1){
-                if(self$species_list[[i]]$stage_list[[j]]$dependencies[[k]][1] == 0){
-                  next                  
-                }
-                else{
-                  initial_dependency_count = initial_dependency_count + length(self$species_list[[i]]$stage_list[[j]]$dependencies[[k]])
-                  for(l in 1:length(self$species_list[[i]]$stage_list[[j]]$dependencies[[k]])){
-                    dependency_list[[length(dependency_list) + 1]] <- c(k, self$species_list[[i]]$stage_list[[j]]$dependencies[[k]][l])
-                  }
-                  #FINISH THIS FUNCTION ASAP
+  determine_stage_survival = function(species_ID, stage_ID){
+    dependency_count = 0
+    dependencies = list()
+    temp_stage <- self$species_list[[species_ID]]$stage_list[[stage_ID]]
+    temp_list <- temp_stage$dependencies
+    for(i in 1:length(temp_list)){
+      if(temp_list[[i]][1] == 0){
+        next
+      }
+      else{
+        if(length(temp_list[[i]] > 1)){
+          prey <- c(i)
+          for(j in 1:length(temp_list[[i]])){
+            prey[length(prey) + 1] <- temp_list[[i]][j] 
+          }
+          dependencies[[length(dependencies) + 1]] <- prey
+        }
+        else{
+          prey <- c(i, temp_list[[i]][1])
+        }
+      }
+    }
+    if(length(dependencies) == 0){
+      dependency_count = 0
+    }
+    else{
+      for(i in 1:length(dependencies)){
+        dependency_count = dependency_count + length(dependencies[[i]])
+      }
+      if(dependency_count == 0){
+        return(1)
+      }
+      else{
+        count = 0
+        for(i in 1:length(dependencies)){
+          if(count > 0){
+            return(1)
+          }
+          else{
+            if(length(dependencies[[i]] > 2)){
+              spID <- dependencies[[i]][1]
+              for(j in 2:length(dependencies[[i]])){
+                stID <- dependencies[[i]][j]
+                if(self$species_list[[spID]]$stage_list[[stID]]$is_active()){
+                  count = count + 1
                 }
               }
             }
-            if(length(dependency_list) > 0){
-              for(p in 1:length(dependency_list)){
-                preyID <- dependency_list[[p]][1]
-                preyStage <- dependency_list[[p]][2]
-                if(self$species_list[[preyID]]$stage_list[[preyStage]]$is_active()){
-                  actual_dependency_count <- 1
-                  break
-                }
-              }
+            if(count > 0){
+              return(1)
             }
-            if(actual_dependency_count == 0){
-              process_counter = 1
-              stage_extinctions[[length(stage_extinctions) + 1]] <- c(i,j)
+            else{
+              return(0)
             }
           }
         }
       }
-      if(length(stage_extinctions) > 1){
-        for(i in 1:length(stage_extinctions)){
-          speciesID <- as.numeric(stage_extinctions[[i]][1])
-          stageID <- as.numeric(stage_extinctions[[i]][2])
-          self$species_list[[speciesID]]$stage_list[[stageID]]$deactivate_stage()
+    }
+  },
+  determine_species_survival = function(species_ID){
+    temp_spec <- self$species_list[[species_ID]]
+    stats <- c()
+    for(i in 1:10){
+      stats[length(stats) + 1] <- self$determine_stage_survival(species_ID, i)
+    }
+    reproductive_age <- temp_spec$reproductive_stage
+    survive = 1
+    if(reproductive_age > 1){
+      for(i in 1:reproductive_age){
+        if(stats[i] == 0){
+          survive = 0
+          break
         }
       }
-      for(i in 1:50){
-        self$species_list[[i]]$check_active()
+    }
+    else{
+      if(stats[1] == 0){
+        survive = 0
       }
-      if(process_counter == 0){
-        stop = 1
+      else{
+        survive = 1
+      }
+     }
+    if(survive == 0){
+      return(c(species_ID, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+    }
+    else{
+      ret = c(species_ID)
+      for(i in 1:length(stats)){
+        if(stats[i] == 0){
+          ret[length(ret) + 1] <- i
+        }
+        if(length(stats) == 1){
+          stats[1] <- 0
+        }
+      }
+      return(ret)
+    }
+    ret <- c(species_ID)
+    for(i in 1:10){
+      if(stats[i] == 0){
+        ret[length(ret) + 1] <- i
       }
     }
-#    }
+    return(ret)
+  },
+  
+  deactivate_stages_list = function(stages){
+    if(length(stages) == 1){
+        #do nothing
+        #self$species_list[[stages[1]]]$deactivate_species()
+      }
+    else{
+      for(i in 2:length(stages)){
+        self$species_list[[stages[1]]]$stage_list[[stages[i]]]$deactivate_stage()
+      }
+    }
+  },
+  get_population_full = function(){
+    count = 0
+    for(i in 1:50){
+      for(j in 1:10){
+        if(self$species_list[[i]]$stage_list[[j]]$is_active()){
+          count = count + 1
+        }
+      }
+    }
+    return(count)
+  },
+  simulate_secondary_extinctions = function(){
+    if(self$get_population_full() == 500){
+      #do nothing
+    }
+    else{
+      deactivation_list = list()
+      for(i in 1:length(self$species_list)){
+        deactivation_list[[length(deactivation_list) + 1]] <- self$determine_species_survival(i)
+      }
+      if(length(deactivation_list) >= 1){
+        for(i in 1:length(deactivation_list)){
+          self$deactivate_stages_list(deactivation_list[[i]])
+        }
+      }
+    }
   },
   
   calculate_robustness = function(){
@@ -513,3 +602,15 @@ migrate_structured_getpop = function(M, I, time){
   return(pop_record)
 }
 
+Mainland <- Structured_Ecosystem$new()
+Mainland$set_ID(1)
+Mainland$custom_web(50, 0.1, 1)
+Mainland$generate_interactions(0.5)
+Mainland$record_parameters()
+for(i in 1:50){
+  Mainland$activate_species(i)
+}
+Mainland$get_population()
+Mainland$deactivate_species(50)
+Mainland$simulate_secondary_extinctions()
+Mainland$get_population_full()

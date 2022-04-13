@@ -99,7 +99,6 @@ Interactions <- R6Class("Interactions", private = list(), public = list(S = 5, C
     }
     else{
       p = p * 100
-      p = p - 10
       i = sample(1:100, p, replace = FALSE)
       for(k in 1:length(i)){
         I_matrix[i[k]] = 1
@@ -787,25 +786,25 @@ inter = Interactions$new()
 inter$generate_interaction(0.4)
 Eco = Structured_Ecosystem$new()
 
-Eco$generate_interactions(0.9)
-Eco$plot_Ecosystem()
-Eco$interactions_list[[2]]$get_coordinates('x')
-Eco$interactions_list[[2]]$get_coordinates('y')
-Eco$get_interaction(1,32)
-Eco$record_species()
-Eco$get_population()
-Eco$species_list
-Eco$species_list[[1]]$get_stage_population()
+#Eco$generate_interactions(0)
+#Eco$plot_Ecosystem()
+#Eco$interactions_list[[2]]$get_coordinates('x')
+#Eco$interactions_list[[2]]$get_coordinates('y')
+#Eco$get_interaction(1,32)
+#Eco$record_species()
+#Eco$get_population()
+#Eco$species_list
+#Eco$species_list[[1]]$get_stage_population()
 
 
-Eco$simulate_secondary_extinctions()
-Eco$get_population()
+#Eco$simulate_secondary_extinctions()
+#Eco$get_population()
 
-Eco2 = Structured_Ecosystem$new()
-Eco2$add_species(Eco$species_list[[1]])
-pop_list <- migrate_structured(Eco, Eco2, 30)
-Eco2$species_list
-plot_migration_pop(0.05, 0, 0.2, 0.4, 0.7, 1)
-plot_migration_rob(0.05, 0, 0.2, 0.4, 0.7, 1)
-calculate_migration_pop_variable_connectance(0.01, 0.05, 0.1, 0.3, 0.4, 0, 0.2, 0.4, 0.7, 1)
-calculate_migration_rob_variable_connectance(0.01, 0.05, 0.1, 0.3, 0.4, 0, 0.2, 0.4, 0.7, 1)
+#Eco2 = Structured_Ecosystem$new()
+#Eco2$add_species(Eco$species_list[[1]])
+#pop_list <- migrate_structured(Eco, Eco2, 30)
+#Eco2$species_list
+#plot_migration_pop(0.05, 0, 0.2, 0.4, 0.7, 1)
+#plot_migration_rob(0.05, 0, 0.2, 0.4, 0.7, 1)
+#calculate_migration_pop_variable_connectance(0.01, 0.05, 0.1, 0.3, 0.4, 0, 0.2, 0.4, 0.7, 1)
+#calculate_migration_rob_variable_connectance(0.01, 0.05, 0.1, 0.3, 0.4, 0, 0.2, 0.4, 0.7, 1)
