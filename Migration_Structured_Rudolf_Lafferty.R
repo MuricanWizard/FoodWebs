@@ -349,10 +349,10 @@ presenceIsland
 #No Time variable (single iteration in secondary extictions)
 
 #Generate Data
-#connectanceControlValues <- c(0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.45)
-#pControlValues <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
-connectanceControlValues <- c(0.01)
-pControlValues <- c(1.0)
+connectanceControlValues <- c(0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.45)
+pControlValues <- c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+#connectanceControlValues <- c(0.01)
+#pControlValues <- c(1.0)
 iterationValues <- c(1,2,3,4,5,6,7,8,9,10)
 for(connectance in connectanceControlValues){
 for(prob in pControlValues){
